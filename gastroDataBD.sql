@@ -165,3 +165,103 @@ SELECT DISTINCT m.id_mesa, m.ubicacion, m.num_comensales
 FROM Mesa m
 JOIN Factura f ON m.id_mesa = f.id_mesa
 ORDER BY m.id_mesa;
+
+
+-- 1. Vista de consumo por cliente
+CREATE VIEW Vista_Consumo_Cliente AS
+SELECT 
+    c.id_cliente,
+    c.nombre AS nombre_cliente, 
+    c.apellido AS apellido_cliente,
+    p.nombre AS platillo,
+    b.nombre AS bebida,
+    f.fecha_factura,
+    p.importe AS precio_platillo,
+    b.importe AS precio_bebida,
+    (p.importe + b.importe) AS total_consumo
+FROM 
+    Cliente c
+JOIN 
+    Factura f ON c.id_cliente = f.id_cliente
+JOIN 
+    Platillo p ON f.id_paltillo = p.id_platillo
+JOIN 
+    Bebida b ON f.id_bebida = b.id_bebida
+ORDER BY 
+    c.nombre, c.apellido, f.fecha_factura;
+
+-- 2. Vista de meseros y facturas atendidas
+CREATE VIEW Vista_Mesero_Facturas AS
+SELECT 
+    m.id_mesero,
+    m.nombre AS nombre_mesero, 
+    m.apellido1, 
+    m.apellido2,
+    f.id_factura AS numero_factura, 
+    f.fecha_factura,
+    me.id_mesa,
+    me.ubicacion AS ubicacion_mesa,
+    me.num_comensales
+FROM 
+    Mesero m
+JOIN 
+    Factura f ON m.id_mesero = f.id_mesero
+JOIN 
+    Mesa me ON f.id_mesa = me.id_mesa
+ORDER BY 
+    m.nombre, f.fecha_factura;
+
+-- 3. Vista de valor total de compra por cliente
+CREATE VIEW Vista_Total_Compra_Cliente AS
+SELECT 
+    c.id_cliente,
+    c.nombre, 
+    c.apellido,
+    COUNT(f.id_factura) AS cantidad_facturas,
+    SUM(p.importe) AS total_platillos,
+    SUM(b.importe) AS total_bebidas,
+    SUM(p.importe + b.importe) AS total_compra
+FROM 
+    Cliente c
+JOIN 
+    Factura f ON c.id_cliente = f.id_cliente
+JOIN 
+    Platillo p ON f.id_paltillo = p.id_platillo
+JOIN 
+    Bebida b ON f.id_bebida = b.id_bebida
+GROUP BY 
+    c.id_cliente, c.nombre, c.apellido
+ORDER BY 
+    total_compra DESC;
+
+-- 4. Vista de consumo de Manuel Pedroza (consulta 6)
+CREATE VIEW Vista_Consumo_Manuel_Pedroza AS
+SELECT 
+    c.nombre, 
+    c.apellido, 
+    SUM(p.importe + b.importe) AS total_consumo
+FROM 
+    Cliente c
+JOIN 
+    Factura f ON c.id_cliente = f.id_cliente
+JOIN 
+    Platillo p ON f.id_paltillo = p.id_platillo
+JOIN 
+    Bebida b ON f.id_bebida = b.id_bebida
+WHERE 
+    c.nombre = 'Manuel' AND c.apellido = 'Pedroza Gonzalez'
+GROUP BY 
+    c.nombre, c.apellido;
+
+-- 5. Vista de mesas utilizadas (consulta 7)
+CREATE VIEW Vista_Mesas_Utilizadas AS
+SELECT DISTINCT 
+    m.id_mesa, 
+    m.ubicacion, 
+    m.num_comensales
+FROM 
+    Mesa m
+JOIN 
+    Factura f ON m.id_mesa = f.id_mesa
+ORDER BY 
+    m.id_mesa;
